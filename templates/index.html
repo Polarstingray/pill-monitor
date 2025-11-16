@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Med Tracker</title>
+
+  <!-- Bootstrap 5 CDN -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet"
+  >
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+
+  <h1 class="text-center mb-4">Medication Tracker</h1>
+
+  <!-- Add Med Form -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5>Add Medication</h5>
+      <form method="POST" action="/add">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input name="name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Cooldown (hours)</label>
+          <input name="cooldown" class="form-control" value="8">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"># Pills Taken</label>
+          <input name="num" class="form-control" value="1">
+        </div>
+
+        <button class="btn btn-primary w-100">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pills List -->
+  <h3 class="mb-3">Current Medications</h3>
+
+  {% for name, data in pills.items() %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title">{{ name }}</h5>
+
+        {% if data.status == 'overdue' %}
+        <span class="badge bg-danger">{{ data.remaining }}</span>
+        {% else %}
+        <span class="badge bg-success">{{ data.remaining }}</span>
+        {% endif %}
+      </div>
+
+      <p class="mb-1"><strong>Last dose:</strong> {{ data.last }}</p>
+      <p class="mb-0"><strong>Next dose:</strong> {{ data.next }}</p>
+
+      <form method="POST" action="/update/{{ name }}">
+        <button class="btn btn-sm btn-outline-primary w-100 mt-2">
+        Update Dose
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+</body>
+</html>

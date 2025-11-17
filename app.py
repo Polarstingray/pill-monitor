@@ -52,7 +52,8 @@ def update(name) :
 
     pills[name]["last"] = now.strftime("%Y-%m-%d %H:%M:%S")
     pills[name]["next"] = next_time.strftime("%Y-%m-%d %H:%M:%S")
-
+    pill = pills[name]
+    write_to_log(LOG_FILE, f"you took {pill["num"]} {name} at {pill["last"]} | next is {pill["next"]}\n")
     return redirect("/")
 
 @app.route("/add", methods=["POST"])
@@ -60,8 +61,12 @@ def add():
     name = request.form["name"]
     cooldown = int(request.form.get("cooldown", 8))
     num = int(request.form.get("num", 1))
-
+    time_taken = request.form.get("time", None)
     last = datetime.now()
+    if time_taken :
+        hr, mn = time_taken.split(":", 1)
+        last = datetime(last.year, last.month, last.day, int(hr), int(mn))
+    
     next_time = last + timedelta(hours=cooldown)
 
     pills[name] = {
@@ -71,7 +76,8 @@ def add():
         "next": next_time.strftime("%Y-%m-%d %H:%M:%S")
     }   
 
-    write_to_log(LOG_FILE, f"you took {num} {name} at {last.strftime("%Y-%m-%d %H:%M:%S")} | next is {next_time.strftime("%Y-%m-%d %H:%M:%S")}")
+    pill = pills[name]
+    write_to_log(LOG_FILE, f"you took {pill["num"]} {name} at {pill["last"]} | next is {pill["next"]}\n")
     return redirect("/")
 
 

@@ -30,6 +30,38 @@ def format_remaining(next_time_str):
     minutes = (seconds % 3600) // 60
     return ("ok", f"{hours}h {minutes}m remaining")
 
+def parse_time_field(time_str: str):
+    """
+    Accepts user input like:
+      14:30
+      2:30 pm
+      2 pm
+      14
+    and returns a datetime with today's date & the parsed time.
+    Returns None if parsing fails.
+    """
+
+    if not time_str:
+        return None
+
+    time_str = time_str.strip().lower()
+
+    formats = [
+        "%H:%M", 
+        "%I:%M %p",
+        "%I %p", 
+        "%H", 
+    ]
+
+    for fmt in formats:
+        try:
+            t = datetime.strptime(time_str, fmt).time()
+            now = datetime.now()
+            return now.replace(hour=t.hour, minute=t.minute, second=0, microsecond=0)
+        except ValueError:
+            continue
+
+    return None
 
 @app.route("/")
 def home():
@@ -61,12 +93,9 @@ def add():
     name = request.form["name"]
     cooldown = int(request.form.get("cooldown", 8))
     num = int(request.form.get("num", 1))
-    time_taken = request.form.get("time", None)
-    last = datetime.now()
-    if time_taken :
-        hr, mn = time_taken.split(":", 1)
-        last = datetime(last.year, last.month, last.day, int(hr), int(mn))
-    
+    time_input = request.form.get("time", None)
+    last = parse_time_field(time_input) or datetime.now()
+
     next_time = last + timedelta(hours=cooldown)
 
     pills[name] = {

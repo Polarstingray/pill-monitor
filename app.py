@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template, redirect
+import json
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-pills = {}
 
 LOG_FILE = "update.log"
+STATE_FILE = "states.json"
 
 def write_to_log(filename, data):
     try:
@@ -13,6 +14,23 @@ def write_to_log(filename, data):
             log.write(data)
     except IOError as e:
         print(str(e))
+
+def write_states(filename, data) :
+    try:
+        with open(filename, 'w') as log:
+            json.dump(data, log, indent=4)
+    except IOError as e:
+        print(str(e))
+
+def read_states(filename) :
+    try:
+        with open(filename, 'r') as log:
+            return json.load(log)
+    except IOError as e:
+        print(str(e))
+        return {}
+ 
+pills = read_states(STATE_FILE)
 
 def format_remaining(next_time_str):
     next_time = datetime.strptime(next_time_str, "%Y-%m-%d %H:%M:%S")
@@ -86,6 +104,7 @@ def update(name) :
     pills[name]["next"] = next_time.strftime("%Y-%m-%d %H:%M:%S")
     pill = pills[name]
     write_to_log(LOG_FILE, f"you took {pill["num"]} {name} at {pill["last"]} | next is {pill["next"]}\n")
+    write_states(STATE_FILE, pills)
     return redirect("/")
 
 @app.route("/add", methods=["POST"])
@@ -107,6 +126,7 @@ def add():
 
     pill = pills[name]
     write_to_log(LOG_FILE, f"you took {pill["num"]} {name} at {pill["last"]} | next is {pill["next"]}\n")
+    write_states(STATE_FILE, pills)
     return redirect("/")
 
 
